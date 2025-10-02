@@ -139,13 +139,13 @@ goals/responsibilites.
 
 **Answer**  
 
-**Conor — Backend 1 (Database & Functions)** – Designs and manages the database schema, implements backend functions, and ensures data is stored and retrieved correctly.  
+**Conor — Backend 1 Main (Database & Functions)** – Designs and manages the database schema, implements backend functions, and ensures data is stored and retrieved correctly.  
 
-**Sammy — Backend 2 (API to Frontend)** – Builds and documents the API endpoints, integrates backend logic into accessible routes, and ensures smooth data flow to the frontend.  
+**Sammy — Backend 2 Main (API to Frontend)** – Builds and documents the API endpoints, integrates backend logic into accessible routes, and ensures smooth data flow to the frontend.  
 
-**Arsalan — Frontend 1 (Design)** – Leads UI/UX design and implementation, creates React components based on Figma designs, and ensures the app is user-friendly and visually consistent.  
+**Arsalan — Frontend 1 Submain (Design)** – Leads UI/UX design and implementation, creates React components based on Figma designs, and ensures the app is user-friendly and visually consistent.  
 
-**Eric — Frontend 2 (API to Backend)** – Connects the frontend to backend APIs, handles data fetching/state management, and renders API responses into the user interface.  
+**Eric — Frontend 2 Submain (API to Backend)** – Connects the frontend to backend APIs, handles data fetching/state management, and renders API responses into the user interface.  
 
 **Note:** As mentioned in Question 4, our roles will extend beyond the typical front-end/back-end split, and each member will take on responsibilities that support the entire stack when necessary and roles are subject to change if necessary.  
 
@@ -298,7 +298,12 @@ We will **never store plaintext passwords**. All passwords are hashed with a sal
 
 ## Deployment
 
-**Q7: Where will you deploy your project (e.g., Heroku, AWS, Render)? How will you manage environment variables and secrets during deployment?**
+**Q7: Where will you deploy your project (e.g., Heroku, AWS, Render)? How will you manage environment variables and secrets during deployment?**  
 
-**Q8: How will you ensure your deployment is reliable and easy to update?**
+**Answer**  
+We will deploy our project on **Render** (free student-friendly hosting). Environment variables (like database URLs and secret keys) will be stored in **Render’s built-in environment variable settings** instead of hardcoding them in code. This way, sensitive data never goes into GitHub.  
 
+**Q8: How will you ensure your deployment is reliable and easy to update?**  
+
+**Answer**  
+We will keep our project code on GitHub and connect the repository to Render. Any time we push updates to the `main` branch, Render will automatically rebuild and redeploy the app. This makes updates simple and keeps the deployment consistent with the latest version of our code.
