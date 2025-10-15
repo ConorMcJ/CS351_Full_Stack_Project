@@ -1,8 +1,18 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import MainMenu from "./pages/MainMenu";
+import GameScreen from "./pages/GameScreen";
+import GameOver from "./pages/GameOver";
+
 export default  function App() {
     return (
-        <div>
-            <h1>StudentLife-Guessr</h1>
-            <p>Frontend Skeleton setup successful</p>
-        </div>
+        <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/menu" element={<MainMenu />} />
+            <Route path="/play" element={<GameScreen />} />
+            <Route path="/over" element={<GameOver />} />
+        {/*default: go to login*/}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
     );
 }
