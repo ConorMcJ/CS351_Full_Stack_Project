@@ -78,16 +78,16 @@ Response (round ends):
 
 # Status Codes  
 
-##Code -> Meaning
+##Code -> Meaning  
 200 -> Success  
 400 -> Bad request  
 401 -> Unauthenticated  
-404 -> Not found
+404 -> Not found  
 500 -> Server error  
 
 # Frontend Flow  
 
-** 1. Login** -> POST /auth/login -> navigate to /menu
+** 1. Login** -> POST /auth/login -> navigate to /menu  
 ** 2. Main Menu** -> GET /leaderboard for range=week and range=all  
 ** 3. Game Screen** -> GET /round then POST /guess to submit answers  
 ** 4. Game Over** -> Show finalScore, allow "New Game" or "Return to Menu"  
