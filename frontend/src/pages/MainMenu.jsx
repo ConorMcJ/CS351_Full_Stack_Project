@@ -1,8 +1,33 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { getLeaderboard } from '../api/client';
 
 export default function MainMenu() {
     const nav = useNavigate();
+    const [week, setWeek] = useState([]);
+    const [all, setAll] = useState([]);
 
+    useEffect(() => {
+        let alive = true;
+
+        (async () => {
+            try {
+                const w = await getLeaderboard('week');
+                if (alive) setWeek(w?.items ?? []);
+            } catch {
+                if (alive) setWeek([]);
+            }
+
+            try {
+                const a = await getLeaderboard('all');
+                if (alive) setAll(a?.items ?? []);
+            } catch {
+                if (alive) setAll([]);
+            }
+        })();
+
+        return () => { alive = false; };
+    }, []);
 
     return (
         <main style={{ maxWidth: 900, margin: "40px auto" }}>
@@ -12,15 +37,25 @@ export default function MainMenu() {
                 <div>
                     <h3>Top This Week</h3>
                     <ul>
-                        <li>1. alice - 120</li>
-                        <li>2. bob - 95</li>
+                        {week.length === 0 ? (
+                            <li>Loading...</li>
+                        ) : (
+                            week.map((r) => (
+                                <li key={`w-${r.rank}`}>{r.rank}. {r.username} - {r.score}</li>
+                            ))
+                        )}
                     </ul>
                 </div>
                 <div>
                     <h3>Top Overall</h3>
                     <ul>
-                        <li>1. zoe - 900</li>
-                        <li>2. mike - 850</li>
+                        {all.length === 0 ? (
+                            <li>Loading...</li>
+                        ) : (
+                            all.map((r) => (
+                                <li key={`a-${r.rank}`}>{r.rank}. {r.username} - {r.score}</li>
+                            ))
+                        )}
                     </ul>
                 </div>
             </section>
