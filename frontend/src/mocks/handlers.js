@@ -10,8 +10,19 @@ let remaining = round.guessesAllowed;
 
 export const handlers = [
     // Auth
-    http.post('/api/v1/auth/login', async () => {
-    return HttpResponse.json({ ok: true, user: { id: 'u_123', username: 'demo' } });
+    http.post('/api/v1/auth/login', async ({ request }) => {
+        const { email, password } = await request.json();
+
+        const ok = email === 'test@uic.edu' && password === 'pass1234';
+
+        if (!ok) {
+            return HttpResponse.json(
+                { error: { message: 'Invalid email or password' } },
+                { status: 401 }
+            );
+        }
+
+        return HttpResponse.json({ ok: true, user: { id: 'u_123', username: 'demo' } });
     }),
     
     http.post('/api/v1/auth/logout', async () => {
