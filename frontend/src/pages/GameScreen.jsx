@@ -1,25 +1,57 @@
 import { useNavigate } from "react-router-dom";
 import {useState, useEffect } from "react";
+import { getRound, postGuess } from '../api/client';
 
 export default function GameScreen() {
     const nav = useNavigate();
     const [guess, setGuess] = useState("");
     const [remaining, setRemaining] = useState(3);
     const [score, setScore] = useState(0);
-
-    // placeholder timer
+    const [round, setRound] = useState(null);
     const [seconds, setSeconds] = useState(0);
+
+    // Fetch new round data
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            try {
+                const r = await getRound();
+                if (!alive) return;
+                setRound(r || null);
+                setRemaining(r?.guessesAllowed ?? 3);
+            } catch {
+                if (!alive) return;
+                setRound(null);
+                setRemaining(0);
+            }
+        })();
+        return () => {alive = false; };
+    }, []);
+
+    // Start timer
     useEffect(() => {
         const t = setInterval(() => setSeconds((s) => s + 1), 1000);
         return () => clearInterval(t);
     }, []);
 
-    function submitGuess(e) {
+    // Reset timer
+    useEffect(() => {
+        if (round?.id) setSeconds(0);
+    }, [round?.id]);
+
+    async function submitGuess(e) {
         e.preventDefault();
-        // placeholder -> 2 wrong guesses leads to "final"
-        if (remaining > 1) setRemaining((r) => r - 1);
-        else nav("/over", { state: { finalScore: score } });
-        setGuess("");
+        if (!round || !guess.trim()) return;
+        try {
+            const res = await postGuess(round.id, guess.trim());
+            setRemaining(res.remaining);
+            if(res.scoreDelta) setScore(s => s + res.scoreDelta);
+            if(res.final) nav('/over', { state: { finalScore: res.finalScore ?? 0, timeElapsed: seconds} });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setGuess('');
+        }
     }
 
     return (
@@ -44,8 +76,9 @@ export default function GameScreen() {
                     value={guess}
                     onChange={(e) => setGuess(e.target.value)}
                     style={{ flex: 1}}
+                    disabled={remaining === 0}
                     />
-                    <button>Submit</button>
+                    <button disabled={!round || !guess.trim() || remaining === 0}>Submit</button>
                 </form>
             </section>
 
