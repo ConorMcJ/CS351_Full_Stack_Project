@@ -7,7 +7,7 @@
 
 **Sammy Ammra - Backend 2 (API to Frontend)**  
 - Begins outlining Django API structure and communication flow + Data Structures from Group 1 & 2.  
-- Will meet with Conor on Saturday to discuss backend design and implementation details.  
+- Will meet with Conor on Monday to discuss backend design and implementation details.  
 
 **Eric Flores - Frontend 2 (API to Backend)**  
 - Completed setup of the frontend skeleton and connected mock API using MSW.  
