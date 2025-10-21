@@ -75,8 +75,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": 'uicguessr_db',
+        "USER": 'uicadmin',
+        "PASSWORD": 'secure_password_123',
+        "HOST": 'localhost',
+        "PORT": '5432',
     }
 }
 
