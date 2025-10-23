@@ -42,3 +42,15 @@ export function getRound() {
 export function postGuess(id, guess) {
     return request('/guess', { method: 'POST', body: { id, guess } });
 }
+
+export const register = (email, password, password_confirm) =>
+    request('/auth/register', { method:'POST', body:{ email, password, password_confirm } });
+
+export const profile = () =>
+    request('/auth/profile');
+
+export const updateProfile = (patch) =>
+    request('/auth/profile/update', { method:'PUT', body: patch });
+
+export const logout = () =>
+    request('/auth/logout', { method:'POST' });
