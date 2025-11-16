@@ -1,0 +1,11 @@
+<html>
+  <body>
+    <p>Hi {{ user.get_full_name|default:user.email }},</p>
+    <p>Thanks for creating an account. Please verify your email by clicking the link below:</p>
+    <p><a href="{{ verification_url }}">Verify your email</a></p>
+    <p>If the link doesn't work, copy and paste this URL into your browser:</p>
+    <p>{{ verification_url }}</p>
+    <hr>
+    <p>— The CS351 Team</p>
+  </body>
+</html>

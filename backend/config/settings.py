@@ -157,11 +157,26 @@ ACCOUNT_SESSION_REMEMBER = True
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
+# Use email for authentication (allauth)
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+
 
 # Email Configuration
-# Console backend for development
 
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+
+# Default from email
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@CultureGuessr.com')
+
+# SMTP settings (used when EMAIL_BACKEND is SMTP backend)
+EMAIL_HOST = config('SMTP_HOST', default='')
+EMAIL_PORT = config('SMTP_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('SMTP_USER', default='')
+EMAIL_HOST_PASSWORD = config('SMTP_PASS', default='')
+EMAIL_USE_TLS = config('SMTP_USE_TLS', default=True, cast=bool)
+EMAIL_USE_SSL = config('SMTP_USE_SSL', default=False, cast=bool)
 
 
 # REST Framework Settings

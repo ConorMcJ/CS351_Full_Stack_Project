@@ -1,0 +1,40 @@
+
+# Week 9 Meeting Notes
+October 22th 6:00pm-10:15pm
+
+## Roles assigned
+**Conor McJannett**:
+- **Backend**: pick data structure from group 1
+- UIC Event Source Links
+- set up backend (Django) skeleton
+- coordinate with Sammy
+
+**Sammy Ammra**:
+- **Backend**: pick data structure from group 2
+- UIC Event Source Links
+- set up backend (Django) skeleton
+- coordinate with Conor
+
+**Eric Flores**:
+- **Frontend**: Add theme/details to figma wireframe
+- set up frontend application (React) skeleton
+- coordinate with Arsalan
+
+**Arsalan Zahid**:
+- **Frontend**: Add theme/details to figma wireframe
+- set up frontend application (React) skeleton
+- coordinate with Eric
+
+## In-meeting accomplishments:
+### Figma wireframe additions:
+- Initialize PostgreSQL Database
+- Implemented REST API on Django (Conor)
+- Pushed 4 events into the game 
+- 
+
+## Pre-meeting accomplishments:
+- Implemented 4 scences from the project frontend wireframe
+- Django backend skeleton established 
+- Picked Trie/IDDFS for project data structure.
+- Gathered photos/event names for demo
+

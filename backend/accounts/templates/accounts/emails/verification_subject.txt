@@ -1,0 +1,1 @@
+Verify your CS351 account, {{ user.get_full_name|default:user.email }}
