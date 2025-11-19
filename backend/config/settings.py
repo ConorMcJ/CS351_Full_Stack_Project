@@ -163,12 +163,41 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
 
+
+
 # Email Configuration
-
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-
-# Default from email
+# Default 'from' email, (this wont't actually work without a paid email service like SendGrid or Amazon SES,
+#will use default_from_email in .env)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@CultureGuessr.com')
+
+SMTP_PROVIDER = config('SMTP_PROVIDER', default='gmail').lower()
+PROVIDER_DEFAULTS = {
+    'gmail': {
+        'HOST': config('GMAIL_SMTP_HOST', default='smtp.gmail.com'),
+        'PORT': config('GMAIL_SMTP_PORT', default=587, cast=int),
+        'USER': config('GMAIL_SMTP_USER', default=''),
+        'PASS': config('GMAIL_SMTP_PASS', default=''),
+        'USE_TLS': config('GMAIL_SMTP_USE_TLS', default=True, cast=bool),
+        'USE_SSL': config('GMAIL_SMTP_USE_SSL', default=False, cast=bool),
+    },
+    'outlook': {
+        'HOST': config('OUTLOOK_SMTP_HOST', default='smtp.office365.com'),
+        'PORT': config('OUTLOOK_SMTP_PORT', default=587, cast=int),
+        'USER': config('OUTLOOK_SMTP_USER', default=''),
+        'PASS': config('OUTLOOK_SMTP_PASS', default=''),
+        'USE_TLS': config('OUTLOOK_SMTP_USE_TLS', default=True, cast=bool),
+        'USE_SSL': config('OUTLOOK_SMTP_USE_SSL', default=False, cast=bool),
+    },
+}
+
+_active = PROVIDER_DEFAULTS.get(SMTP_PROVIDER, PROVIDER_DEFAULTS['gmail'])
+EMAIL_HOST = config('EMAIL_HOST', default=_active['HOST'])
+EMAIL_PORT = config('EMAIL_PORT', default=_active['PORT'], cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default=_active['USER'])
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default=_active['PASS'])
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=_active['USE_TLS'], cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=_active['USE_SSL'], cast=bool)
 
 # SMTP settings (used when EMAIL_BACKEND is SMTP backend)
 EMAIL_HOST = config('SMTP_HOST', default='')
