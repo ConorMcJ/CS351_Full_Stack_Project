@@ -1,0 +1,11 @@
+Hi {{ user.get_full_name|default:user.email }},
+
+Thanks for registering. Please confirm your email address by clicking the link below:
+
+{{ activate_url }}
+
+If you didn't sign up for an account, you can please ignore this email.
+
+Thanks,
+The CS351 Team
+

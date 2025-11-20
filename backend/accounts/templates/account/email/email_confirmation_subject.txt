@@ -1,0 +1,2 @@
+Confirm your account
+Hi {{ user.get_full_name|default:user.email }}

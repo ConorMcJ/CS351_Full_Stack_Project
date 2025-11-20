@@ -1,0 +1,20 @@
+<html><html>
+
+  <body>  <body>
+
+    <p>Hi {{ user.get_full_name|default:user.email }},</p>    <p>Hi {{ user.get_full_name|default:user.email }},</p>
+
+    <p>Thank you for registering. Please verify your email address by clicking the link below:</p>    <p>Thanks for creating an account. Please verify your email by clicking the link below:</p>
+
+    <p><a href="{{ verification_url }}">Verify your email</a></p>    <p><a href="{{ verification_url }}">Verify your email</a></p>
+
+    <p>If you didn't sign up, ignore this message.</p>    <p>If the link doesn't work, copy and paste this URL into your browser:</p>
+
+    <p>Thanks,<br>The CS351 Team</p>    <p>{{ verification_url }}</p>
+
+  </body>    <hr>
+
+</html>    <p>— The CS351 Team</p>
+
+  </body>
+</html>

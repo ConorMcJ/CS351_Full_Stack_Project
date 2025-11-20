@@ -7,6 +7,7 @@ from datetime import timedelta
 import random
 from .models import UICEvent, GameRound, Guess
 from .serializers import UICEventSerializer, GameRoundSerializer, GuessSerializer
+from games.utils.fuzz_finder import FuzzyMatcher
 
 
 @api_view(['GET'])
@@ -46,7 +47,7 @@ def start_game(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_guess(request):
-    """Submit a guess for a question"""
+    """Submit a guess for a question (Updated with fuzzy matching)"""
     game_round_id = request.data.get('game_round_id')
     uic_event_id = request.data.get('uic_event_id')
     user_answer = request.data.get('answer')
@@ -61,37 +62,48 @@ def submit_guess(request):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Create guess (will be validated in serializer)
+    # Initialize fuzzy matcher with this event's acceptable answers
+    fuzzy_matcher = FuzzyMatcher(
+        uic_event.acceptable_answers,
+        tolerance=0.8  # 80% minimum similarity
+    )
+
+    # Validate answer using fuzzy matching
+    is_correct, matched_answer, confidence = fuzzy_matcher.is_valid_answer(user_answer)
+
+    # Create guess record
     guess = Guess.objects.create(
         game_round=game_round,
         uic_event=uic_event,
         user_answer=user_answer,
-        time_taken=time_taken
+        time_taken=time_taken,
+        is_correct=is_correct,
+        points_earned=uic_event.points_value if is_correct else 0
     )
-
-    # Validate answer
-    user_answer_lower = user_answer.lower().strip()
-    acceptable_answers_lower = [ans.lower().strip() for ans in uic_event.acceptable_answers]
-    is_correct = user_answer_lower in acceptable_answers_lower
-    points_earned = uic_event.points_value if is_correct else 0
-
-    guess.is_correct = is_correct
-    guess.points_earned = points_earned
     guess.save()
 
     # Update game round stats
     game_round.questions_answered += 1
     if is_correct:
         game_round.correct_answers += 1
-    game_round.total_score += points_earned
+    game_round.total_score += guess.points_earned
     game_round.save()
+
+    # Get alternative suggestions if incorrect
+    suggestions = []
+    if not is_correct:
+        suggestions = fuzzy_matcher.get_closest_match(user_answer, top_n=3)
+        suggestions = [{'answer': ans, 'confidence': conf} for ans, conf in suggestions]
 
     return Response({
         'is_correct': is_correct,
-        'points_earned': points_earned,
+        'points_earned': guess.points_earned,
         'correct_answer': uic_event.name,
         'description': uic_event.description,
         'acceptable_answers': uic_event.acceptable_answers,
+        'matched_answer': matched_answer,
+        'confidence': confidence,
+        'suggestions': suggestions,
         'current_score': game_round.total_score,
         'questions_remaining': max(0, 7 - game_round.questions_answered)
     }, status=status.HTTP_200_OK)
