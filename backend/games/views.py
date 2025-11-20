@@ -7,7 +7,7 @@ from datetime import timedelta
 import random
 from .models import UICEvent, GameRound, Guess
 from .serializers import UICEventSerializer, GameRoundSerializer, GuessSerializer
-from games.utils.fuzzy_matcher import FuzzyMatcher
+from games.utils.fuzz_finder import FuzzyMatcher
 
 
 @api_view(['GET'])
