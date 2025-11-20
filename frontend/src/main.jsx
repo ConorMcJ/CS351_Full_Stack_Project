@@ -11,7 +11,6 @@ async function prepare() {
   }
 }
 
-prepare().then(() => {
   ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
       <BrowserRouter>
@@ -19,6 +18,5 @@ prepare().then(() => {
       </BrowserRouter>
     </React.StrictMode>
   );
-});
 
 
