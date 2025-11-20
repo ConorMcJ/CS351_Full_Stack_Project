@@ -1,91 +1,283 @@
 import { useNavigate } from "react-router-dom";
-import {useState, useEffect } from "react";
-import { getRound, postGuess } from '../api/client';
+import { useState, useEffect } from "react";
+import { gameAPI } from '../api/client';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export default function GameScreen() {
     const nav = useNavigate();
+
     const [guess, setGuess] = useState("");
-    const [remaining, setRemaining] = useState(3);
+    const [lives, setLives] = useState(3);
     const [score, setScore] = useState(0);
-    const [round, setRound] = useState(null);
-    const [seconds, setSeconds] = useState(0);
+
+    const [roundId, setRoundId] = useState(null);
+    const [events, setEvents] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const[secondsLeft, setSecondsLeft] = useState(60);
+    const [totalSeconds, setTotalSeconds] = useState(0);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [feedback, setFeedback] = useState("");
+    const [gameEnded, setGameEnded] = useState(false);
 
     // Fetch new round data
     useEffect(() => {
         let alive = true;
+
         (async () => {
+            setLoading(true);
+            setError("");
+            setFeedback("");
+            setLives(3);
+            setScore(0);
+            setTotalSeconds(0);
+            setSecondsLeft(60);
+            setCurrentIndex(0);
+
             try {
-                const r = await getRound();
+                const res = await gameAPI.startGame();
                 if (!alive) return;
-                setRound(r || null);
-                setRemaining(r?.guessesAllowed ?? 3);
-            } catch {
+
+                const id = res.game_round_id ?? res.id ?? null;
+                const qs = res.questions ?? [];
+
+                setRoundId(id);
+                setEvents(qs);
+            } catch (err) {
                 if (!alive) return;
-                setRound(null);
-                setRemaining(0);
+                console.error("Failed to start game:", err);
+                setError("Failed to start game.");
+            } finally {
+                if (alive) setLoading(false);
             }
         })();
-        return () => {alive = false; };
+
+        return () => {
+            alive = false;
+        };
     }, []);
 
-    // Start timer
+    // Game timer
     useEffect(() => {
-        const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+        if (!roundId || gameEnded) return;
+
+        const t = setInterval(() => {
+            setTotalSeconds((s) => s + 1);
+        }, 1000);
+
         return () => clearInterval(t);
-    }, []);
+    }, [roundId, gameEnded]);
 
-    // Reset timer
+    // 60 seconds per question
     useEffect(() => {
-        if (round?.id) setSeconds(0);
-    }, [round?.id]);
+        if (!roundId || gameEnded || events.length === 0) return;
 
-    async function submitGuess(e) {
-        e.preventDefault();
-        if (!round || !guess.trim()) return;
+        setSecondsLeft(60);
+        setFeedback("");
+
+        const timer = setInterval(() => {
+            setSecondsLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    endGame("time_up");
+                    return 0;
+                }
+
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [roundId, currentIndex, gameEnded, events.length]);
+
+    async function endGame(reason) {
+        if (gameEnded || !roundId) return;
+        setGameEnded(true);
+
         try {
-            const res = await postGuess(round.id, guess.trim());
-            setRemaining(res.remaining);
-            if(res.scoreDelta) setScore(s => s + res.scoreDelta);
-            if(res.final) nav('/over', { state: { finalScore: res.finalScore ?? 0, timeElapsed: seconds} });
+            const res = await gameAPI.completeGame(roundId);
+            const finalScore = res.final_score ?? score;
+            const accuracy = res.accuracy ?? null;
+
+            nav("/over", {
+                state: {
+                    finalScore,
+                    timeElapsed: totalSeconds,
+                    accuracy,
+                    reason,
+                },
+            });
         } catch (err) {
-            console.error(err);
-        } finally {
-            setGuess('');
+            console.warn("completeGame failed:", err);
+            nav("/over", {
+                state: {
+                    finalScore: score,
+                    timeElapsed: totalSeconds,
+                },
+            });
         }
     }
 
+    async function submitGuess(e) {
+        e.preventDefault();
+        if (!roundId || events.length === 0 || !guess.trim() || gameEnded) return;
+
+        const currentEvent = events[currentIndex];
+        if (!currentEvent) return;
+
+        try {
+            const timeTaken = 60 - secondsLeft;
+
+            const res = await gameAPI.submitGuess(
+                roundId,
+                currentEvent.id ?? currentEvent.uic_event_id,
+                guess.trim(),
+                timeTaken
+            );
+
+            const isCorrect = !!res.is_correct;
+            const newScore = res.current_score != null ? res.current_score : score;
+
+            setScore(newScore);
+            setFeedback(isCorrect ? "Correct!" : "Incorrect!");
+
+            // Update lives if incorrect
+            let newLives = lives;
+            if (!isCorrect) {
+                newLives = lives - 1;
+                setLives(newLives);
+            }
+
+            const nextIndex = currentIndex + 1;
+            const noMoreEvents = nextIndex >= events.length;
+
+            if (newLives <= 0) {
+                await endGame("no_lives");
+            } else if (noMoreEvents) {
+                await endGame("completed_all")
+            } else {
+                setCurrentIndex(nextIndex);
+            }
+        } catch (err) {
+            console.error("submitGuess failed:", err);
+        } finally {
+            setGuess("");
+        }
+    }
+
+    const currentEvent = events.length > 0 ? events[currentIndex] : null;
+
+    const hintText = currentEvent?.hint || currentEvent?.description || "Brief sentence(s) describing event.";
+
+    const rawImage = currentEvent?.image;
+    const imageUrl = rawImage ? rawImage.startsWith("http") ? rawImage : `${API_BASE_URL}${rawImage}` : null;
+
     return (
-        <main style={{ maxWidth: 1100, margin: "24px auto", display: "grid", gridTemplateColumns: "320px 1fr 360px", gap: 24}}>
-            {/*Left column: timer + score + quit */}
+        <main style={{
+            maxWidth: 1100,
+            margin: "24px auto",
+            display: "grid",
+            gridTemplateColumns: "320px 1fr 360px",
+            gap: 24,
+            fontFamily: "system-ui, sans-serif",
+            }}
+        >
             <aside>
-                <div>⏱ Time: {seconds}s</div>
-                <div style= {{marginTop: 12 }}>Score: {score}</div>
-                <button style={{ marginTop: 12 }} onClick={() => nav("/menu")}>Return to Menu</button>
+                <div>⏱ Time left: {secondsLeft}s</div>
+                <div style={{ marginTop: 8 }}>
+                    Total Time: {totalSeconds}s
+                </div>
+                <div style={{ marginTop: 8 }}>Score: {score}</div>
+                <div style={{ marginTop: 8 }}>Lives: {lives}</div>
+                <div style={{ marginTop: 8 }}>
+                    Question:{" "}
+                    {events.length > 0 ? `${currentIndex + 1} / ${events.length}` : "0 / 0"}
+                </div>
+                <button style={{ marginTop: 12 }}
+                    onClick={() => nav("/menu")}
+                >
+                    Return to Menu
+                </button>
             </aside>
 
-            {/*Center: image + input*/}
             <section>
-                <div style={{ width: "100%", height: 240, background: "#eee", display: "grid", placeItems: "center" }}>
-                    <span>[ Event Image ]</span>
+                <div style={{ 
+                    width: "100%",
+                    height: 240,
+                    background: "#eee",
+                    display: "grid",
+                    placeItems: "center",
+                    }}
+                >
+                    {loading ? (
+                        <span>Loading event...</span>
+                    ) : imageUrl ? (
+                        <img
+                            src={imageUrl}
+                            alt={currentEvent.name ?? "Event"}
+                            style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                objectFit: "cover",
+                            }}
+                        />
+                    ) : (
+                        <span>[ No image available ]</span>
+                    )}
                 </div>
 
-                <div style={{ marginTop: 16 }}>Guesses remaining: {remaining}</div>
-                <form onSubmit={submitGuess} style={{ display: "flex", gap: 8, marginTop: 8}}>
+                <div style={{ marginTop: 16 }}>
+                    Lives remaining: {lives}
+                </div>
+
+                {feedback && (
+                    <div style={{ marginTop: 8 }}>
+                        {feedback === "Correct!" ? "✅ Correct!" : "❌ Incorrect"}
+                    </div>
+                )}
+
+                {error && (
+                    <div style={{ color: "#d33", marginTop: 8 }}>{error}</div>
+                )}
+
+                <form
+                    onSubmit={submitGuess}
+                    style={{ display: "flex", gap: 8, marginTop: 8 }}
+                >
                     <input
-                    placeholder="Type your guess"
-                    value={guess}
-                    onChange={(e) => setGuess(e.target.value)}
-                    style={{ flex: 1}}
-                    disabled={remaining === 0}
+                        placeholder="Type your guess"
+                        value={guess}
+                        onChange={(e) => setGuess(e.target.value)}
+                        style={{ flex: 1 }}
+                        disabled={
+                            !roundId ||
+                            loading ||
+                            gameEnded ||
+                            lives <= 0 ||
+                            secondsLeft <= 0
+                        }
                     />
-                    <button disabled={!round || !guess.trim() || remaining === 0}>Submit</button>
+                    <button 
+                        disabled={
+                            !roundId ||
+                            !guess.trim() ||
+                            loading ||
+                            gameEnded ||
+                            lives <= 0 ||
+                            secondsLeft <= 0
+                        }
+                    >
+                        Submit
+                    </button>
                 </form>
             </section>
 
-            {/*Right column: hint */}
             <aside>
                 <h3>Hint</h3>
-                <p>Brief sentence(s) describing the cultural event featured.</p>
+                <p>{hintText}</p>
             </aside>
         </main>
     );
