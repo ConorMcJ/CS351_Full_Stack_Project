@@ -1,6 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from 'react';
-import { getLeaderboard } from '../api/client';
+import { leaderboardAPI } from '../api/client';
 
 export default function MainMenu() {
     const nav = useNavigate();
@@ -33,14 +33,14 @@ export default function MainMenu() {
 
         (async () => {
             try {
-                const w = await getLeaderboard('week');
+                const w = await leaderboardAPI.getWeeklyScores();
                 if (alive) setWeek(w?.items ?? []);
             } catch {
                 if (alive) setWeek([]);
             }
 
             try {
-                const a = await getLeaderboard('all');
+                const a = await leaderboardAPI.getTopScores();
                 if (alive) setAll(a?.items ?? []);
             } catch {
                 if (alive) setAll([]);

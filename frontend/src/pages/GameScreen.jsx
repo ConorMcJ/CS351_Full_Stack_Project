@@ -1,6 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import {useState, useEffect } from "react";
-import { getRound, postGuess } from '../api/client';
+//import { getRound } from '../api/client';
+async function getRound(){}
+import { gameAPI } from '../api/client'
+const postGuess = gameAPI.submitGuess; // had a diff name before
+// Missing: getRound
+// login ina  diff area
+// getLeaderboard
 
 export default function GameScreen() {
     const nav = useNavigate();

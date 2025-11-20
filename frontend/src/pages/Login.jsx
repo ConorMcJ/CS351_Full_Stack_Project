@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { login } from '../api/client';
+import { useState, useEffect } from "react";
+import { authAPI} from '../api/client'
+import axios from "axios";
+const login = authAPI.login;
 
 export default function Login() {
     const nav = useNavigate();
