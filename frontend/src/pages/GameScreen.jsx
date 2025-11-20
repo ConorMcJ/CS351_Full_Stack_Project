@@ -10,6 +10,27 @@ export default function GameScreen() {
     const [round, setRound] = useState(null);
     const [seconds, setSeconds] = useState(0);
 
+    // figma stuff
+    useEffect(() => {
+        const fetchDesignData = async () => {
+            try {
+                const response = await axios.get(`https://api.figma.com/v1/files/${process.env.REACT_APP_FIGMA_FILE_KEY}`, {
+                    headers: { 'X-Figma-Token': process.env.REACT_APP_FIGMA_API_KEY }
+                });
+                
+
+                const styles = { // have to fill
+                };
+                setButtonStyles(styles);
+            } catch (error) {
+                console.error("Error fetching Figma data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDesignData();
+    }, []);
     // Fetch new round data
     useEffect(() => {
         let alive = true;

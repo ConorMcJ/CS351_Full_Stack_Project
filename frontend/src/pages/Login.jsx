@@ -9,6 +9,30 @@ export default function Login() {
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
+    // this stuff is to fetch figma 
+    const [buttonStyles, setButtonStyles] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDesignData = async () => {
+            try {
+                const response = await axios.get(`https://api.figma.com/v1/files/${process.env.REACT_APP_FIGMA_FILE_KEY}`, {
+                    headers: { 'X-Figma-Token': process.env.REACT_APP_FIGMA_API_KEY }
+                });
+                
+
+                const styles = { // have to fill
+                };
+                setButtonStyles(styles);
+            } catch (error) {
+                console.error("Error fetching Figma data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDesignData();
+    }, []);
     async function onSubmit(e) {
         e.preventDefault();
         setError("");
