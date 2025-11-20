@@ -46,24 +46,21 @@ export default function GameOver() {
             <h1>Results</h1>
             <h2 style={{ margin: 0 }}>{finalScore}</h2>
 
-            {loading ? (
-                <div>Loading styles...</div> // Figma styles
-            ) : (
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
                     <button 
-                        style={{ ...buttonStyles.newGameButton, padding: '10px 20px', border: 'none', borderRadius: '5px', color: '#fff' }}
+                        style={{ ...buttonStyles.newGameButton, padding: '10px 20px', border: 'none', borderRadius: '5px', color: '#000' }}
                         onClick={() => nav("/play")}
                     >
                         New Game
                     </button>
                     <button 
-                        style={{ ...buttonStyles.returnButton, padding: '10px 20px', border: 'none', borderRadius: '5px', color: '#fff' }}
+                        style={{ ...buttonStyles.returnButton, padding: '10px 20px', border: 'none', borderRadius: '5px', color: '#000' }}
                         onClick={() => nav("/menu")}
                     >
                         Return
                     </button>
                 </div>
-            )}
+           
         </main>
     );
 }

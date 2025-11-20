@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {useState, useEffect } from "react";
 //import { getRound } from '../api/client';
-async function getRound(){}
-import { gameAPI } from '../api/client'
+import { gameAPI} from '../api/client'
 const postGuess = gameAPI.submitGuess; // had a diff name before
 // Missing: getRound
 // login ina  diff area
@@ -11,12 +10,15 @@ const postGuess = gameAPI.submitGuess; // had a diff name before
 export default function GameScreen() {
     const nav = useNavigate();
     const [guess, setGuess] = useState("");
+    const [events, setEvents] = useState([]);
     const [remaining, setRemaining] = useState(3);
+    const [currentQuestion, setCurrentQuestion] = useState(1);
     const [score, setScore] = useState(0);
     const [round, setRound] = useState(null);
     const [seconds, setSeconds] = useState(0);
 
     // figma stuff
+    /*
     useEffect(() => {
         const fetchDesignData = async () => {
             try {
@@ -36,14 +38,31 @@ export default function GameScreen() {
         };
 
         fetchDesignData();
-    }, []);
+    }, []);*/
     // Fetch new round data
     useEffect(() => {
         let alive = true;
         (async () => {
             try {
-                const r = await getRound();
+                const g = await gameAPI.startGame();
+
+                
+                // On backend:
+                /*
+
+                return Response({
+                    'game_round_id': game_round.id,
+                    'questions': events_serializer.data,
+                    'total_questions': len(selected_events)
+                }, status=status.HTTP_201_CREATED)
+                */
+                const r = g.game_round_id;
+                const events = await gameAPI.getEvents();
+                setEvents(events)
+                
+                //const r = gameAPI.getRound();
                 if (!alive) return;
+                
                 setRound(r || null);
                 setRemaining(r?.guessesAllowed ?? 3);
             } catch {
@@ -51,10 +70,26 @@ export default function GameScreen() {
                 setRound(null);
                 setRemaining(0);
             }
+            
         })();
         return () => {alive = false; };
     }, []);
 
+
+    // function to get event
+    const getEvent = (id)=>{
+        console.log("id is ", id)
+        let ret = null;
+        events.forEach((value)=>{
+            
+            if (id == value.id){
+                console.log(value)
+                ret = value;
+                
+            }
+        })
+        return ret;
+    }
     // Start timer
     useEffect(() => {
         const t = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -68,12 +103,33 @@ export default function GameScreen() {
 
     async function submitGuess(e) {
         e.preventDefault();
-        if (!round || !guess.trim()) return;
+        console.log("Guess submitted");
+        if (!round || !guess.trim()) 
+            {
+                console.log ("no round!");
+                return;
+            };
         try {
-            const res = await postGuess(round.id, guess.trim());
-            setRemaining(res.remaining);
-            if(res.scoreDelta) setScore(s => s + res.scoreDelta);
-            if(res.final) nav('/over', { state: { finalScore: res.finalScore ?? 0, timeElapsed: seconds} });
+            const res = await postGuess(round, currentQuestion, guess.trim(), seconds);
+            console.log(res);
+            if (res.is_correct) {
+                setRemaining(3); 
+                setCurrentQuestion(currentQuestion+1)
+                if (currentQuestion == events.length){
+                    nav('/over', { state: { finalScore: res.current_score ?? 0, timeElapsed: seconds} });
+                }
+            }
+            else {
+                    if (remaining != 1)
+                    {
+                        setRemaining(remaining-1); 
+                    } else {
+                        nav('/over', { state: { finalScore: res.current_score ?? 0, timeElapsed: seconds} });
+                    }
+                }
+            
+            setScore(res.current_score);
+            if(res.final) nav('/over', { state: { finalScore: res.current_score ?? 0, timeElapsed: seconds} });
         } catch (err) {
             console.error(err);
         } finally {
@@ -81,6 +137,7 @@ export default function GameScreen() {
         }
     }
 
+    console.log("round is ", round);
     return (
         <main style={{ maxWidth: 1100, margin: "24px auto", display: "grid", gridTemplateColumns: "320px 1fr 360px", gap: 24}}>
             {/*Left column: timer + score + quit */}
@@ -95,7 +152,7 @@ export default function GameScreen() {
                 <div style={{ width: "100%", height: 240, background: "#eee", display: "grid", placeItems: "center" }}>
                     <span>[ Event Image ]</span>
                 </div>
-
+                <p>{ getEvent(currentQuestion)?.description}</p>
                 <div style={{ marginTop: 16 }}>Guesses remaining: {remaining}</div>
                 <form onSubmit={submitGuess} style={{ display: "flex", gap: 8, marginTop: 8}}>
                     <input

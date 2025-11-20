@@ -45,9 +45,9 @@ export default function Register() {
             console.log("button clicked")
             //const res = await login(email, pw);
             console.log(e)
-            console.log(e.target.email);
-            console.log(e.target.password);
-            const res = await authAPI.register(e.target.email, e.target.password)
+            console.log(e.target.email.value);
+            console.log(e.target.password.value);
+            const res = await authAPI.register(e.target.email.value, e.target.password.value)
             console.log('register ok', res);
             nav('/login');
         } catch (err) {

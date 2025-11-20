@@ -1,11 +1,14 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { leaderboardAPI } from '../api/client';
+import axios from "axios";
 
 export default function MainMenu() {
     const nav = useNavigate();
     const [week, setWeek] = useState([]);
+    const [weekSize, setWeekSize] = useState(-1);
     const [all, setAll] = useState([]);
+    const [allSize, setAllSize] = useState([]);
 
     // figma stuff
     useEffect(() => {
@@ -34,14 +37,18 @@ export default function MainMenu() {
         (async () => {
             try {
                 const w = await leaderboardAPI.getWeeklyScores();
-                if (alive) setWeek(w?.items ?? []);
+                console.log("got here");
+                console.log(w);
+                if (alive) setWeek(w?.entries ?? []);
+                setWeekSize(w?.entries?.length); // set size
             } catch {
                 if (alive) setWeek([]);
             }
 
             try {
                 const a = await leaderboardAPI.getTopScores();
-                if (alive) setAll(a?.items ?? []);
+                if (alive) setWeek(a?.entries ?? []);
+                setWeekSize(a?.entries?.length); // set size
             } catch {
                 if (alive) setAll([]);
             }
@@ -58,9 +65,14 @@ export default function MainMenu() {
                 <div>
                     <h3>Top This Week</h3>
                     <ul>
-                        {week.length === 0 ? (
+                        {week.length === -1 ? (
                             <li>Loading...</li>
-                        ) : (
+                        ) : 
+                        // another case if there are 0 entries
+                        week.length === 0 ? (
+                            <li>No games yet!</li>
+                        ) :
+                        (
                             week.map((r) => (
                                 <li key={`w-${r.rank}`}>{r.rank}. {r.username} - {r.score}</li>
                             ))
@@ -70,9 +82,14 @@ export default function MainMenu() {
                 <div>
                     <h3>Top Overall</h3>
                     <ul>
-                        {all.length === 0 ? (
+                        {all.length === -1 ? (
                             <li>Loading...</li>
-                        ) : (
+                        ) : 
+                        // another case if there are 0 entries
+                        all.length === 0 ? (
+                            <li>No games yet!</li>
+                        ) 
+                        : (
                             all.map((r) => (
                                 <li key={`a-${r.rank}`}>{r.rank}. {r.username} - {r.score}</li>
                             ))
