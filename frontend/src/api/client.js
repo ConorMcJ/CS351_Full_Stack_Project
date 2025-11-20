@@ -1,56 +1,114 @@
 // 1. Base URL comes from .env -> set later to http://localhost:8000 for Django
-const BASE = (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api';
 
-// 2. Helper to call JSON endpoints
-async function request(path, { method = 'GET', body, headers = {}, credentials } = {}) {
-    const res = await fetch(`${BASE}${path}`, {
+// 2. CSRF Helper
+function getCookie(name) {
+    const cookieStr = document.cookie || '';
+    const cookies = cookieStr.split(';').map(c => c.trim());
+
+    for (const c of cookies) {
+        if (c.startsWith(name + '=')) return decodeURIComponent(c.slice(name.length + 1));
+    }
+
+    return null;
+}
+
+// 3. Helper to call JSON endpoints
+async function apiCall(endpoint, method = 'GET', body = null ) {
+    const isUnsafe = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (isUnsafe) {
+        const csrf = getCookie('csrftoken');
+        if (csrf) headers['X-CSRFToken'] = csrf;
+    }
+    
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
-        headers: { 'Content-Type': 'application/json', ...headers},
+        headers,
+        credentials: 'include',
         body: body ? JSON.stringify(body) : undefined,
-        credentials: credentials || 'same-origin',
     });
     
     let data;
-    try { data = await res.json(); } catch {/* ignore parse errors*/}
+    const text = await res.text()
+
+    if (text) {
+        try { data = JSON.parse(text); } catch {}
+    }
+
     if (!res.ok) {
-        const err = new Error(data?.error?.message || `HTTP ${res.status}`);
+        const msg = (data && (data.error || data.detail)) || `API request failed (${res.status})`;
+        const err = new Error(msg)
         err.status = res.status;
         err.payload = data;
         throw err;
     }
+
     return data;
 }
 
-// 3. Export API calls
-export function login(email, password) {
-    return request(`/auth/login`, { method: 'POST', body: { email, password } });
-}
+/*
+========================================
+Auth endpoints
+========================================
+*/
+export const authAPI = {
+    register: (email, password) =>
+        apiCall('/accounts/register/', 'POST', {
+            email,
+            password,
+            password_confirm: password,
+        }),
+    
+    login: (email, password) =>
+        apiCall('/accounts/login/', 'POST', { email, password }),
 
-export function logout() {
-    return request('/auth/logout', { method: 'POST' });
-}
+    logout: () =>
+        apiCall('/accounts/logout/', 'POST'),
 
-export function getLeaderboard(range = 'week', limit = 10) {
-    const q = new URLSearchParams({ range, limit: String(limit) }).toString();
-    return request(`/leaderboard?${q}`);
-}
+    getProfile: () =>
+        apiCall('/accounts/profile/', 'GET'),
+    
+    updateProfile: (data) =>
+        apiCall('/accounts/profile/update/', 'PUT', data),
+};
+/*
+========================================
+Game endpoints
+========================================
+*/
+export const gameAPI = {
+    getEvents: () =>
+        apiCall('/games/events/', 'GET'),
+    
+    startGame: () =>
+        apiCall('/games/start/', 'POST'),
+    
+    submitGuess: (gameRoundId, uicEventId, answer, timeTaken) =>
+        apiCall('/games/guess/', 'POST', {
+            game_round_id: gameRoundId,
+            uic_event_id: uicEventId,
+            answer,
+            time_taken: timeTaken,
+        }),
 
-export function getRound() {
-    return request('/round');
-}
+    completeGame: (gameRoundId) =>
+        apiCall('/games/complete/', 'POST', { game_round_id: gameRoundId }),
+};
 
-export function postGuess(id, guess) {
-    return request('/guess', { method: 'POST', body: { id, guess } });
-}
+/*
+========================================
+Leaderboard endpoints
+========================================
+*/
+export const leaderboardAPI = {
+    getTopScores: (limit = 10) =>
+        apiCall(`/leaderboards/top/?limit=${limit}`, 'GET'),
 
-export const register = (email, password, password_confirm) =>
-    request('/auth/register', { method:'POST', body:{ email, password, password_confirm } });
-
-export const profile = () =>
-    request('/auth/profile');
-
-export const updateProfile = (patch) =>
-    request('/auth/profile/update', { method:'PUT', body: patch });
-
-export const logout = () =>
-    request('/auth/logout', { method:'POST' });
+    getWeeklyScores: (limit = 10) =>
+        apiCall(`/leaderboards/weekly/?limit=${limit}`, 'GET'),
+    
+    getUserStats: () =>
+        apiCall('/leaderboards/me/', 'GET'),
+};
