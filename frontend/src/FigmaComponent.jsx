@@ -9,8 +9,8 @@ const FigmaComponent = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`https://api.figma.com/v1/files/${process.env.REACT_APP_FIGMA_FILE_KEY}`, {
-                    headers: { 'X-Figma-Token': process.env.REACT_APP_FIGMA_API_KEY }
+                const response = await axios.get(`https://api.figma.com/v1/files/${import.meta.env.VITE_API_FIGMA_FILE_KEY}`, {
+                    headers: { 'X-Figma-Token': import.meta.env.VITE_API_FIGMA_API_KEY }
                 });
                 setData(response.data);
             } catch (error) {

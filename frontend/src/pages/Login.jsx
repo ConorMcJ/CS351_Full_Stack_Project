@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { authAPI} from '../api/client'
 import axios from "axios";
 const login = authAPI.login;
+const REACT_APP_FIGMA_FILE_KEY = import.meta.env.VITE_API_FIGMA_FILE_KEY;
+const REACT_APP_FIGMA_API_KEY = import.meta.env.VITE_API_FIGMA_API_KEY;
 
 export default function Login() {
     const nav = useNavigate();
@@ -18,8 +20,8 @@ export default function Login() {
     useEffect(() => {
         const fetchDesignData = async () => {
             try {
-                const response = await axios.get(`https://api.figma.com/v1/files/${process.env.REACT_APP_FIGMA_FILE_KEY}`, {
-                    headers: { 'X-Figma-Token': process.env.REACT_APP_FIGMA_API_KEY }
+                const response = await axios.get(`https://api.figma.com/v1/files/${REACT_APP_FIGMA_FILE_KEY}`, {
+                    headers: { 'X-Figma-Token': REACT_APP_FIGMA_API_KEY }
                 });
                 
 
