@@ -1,0 +1,10 @@
+<html>
+  <body>
+    <p>Hi {{ user.get_full_name|default:user.email }},</p>
+    <p>Thanks for creating an account. Please confirm your email by clicking the link below:</p>
+    <p><a href="{{ activate_url }}">Confirm your email</a></p>
+    <p>{{ activate_url }}</p>
+    <hr>
+    <p>— The CS351 Team</p>
+  </body>
+</html>
