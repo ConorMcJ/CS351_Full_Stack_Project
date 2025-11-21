@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+import base64
 from .models import UICEvent, GameRound, Guess
 
 
@@ -13,7 +14,7 @@ class UICEventAdmin(admin.ModelAdmin):
         'image_preview',
         'event_date'
     ]
-    list_filter = ['organization', 'event_date']
+    list_filter = ['organization', 'event_date', 'image_format']
     search_fields = ['name', 'description', 'organization']
     ordering = ['name']
     readonly_fields = ['event_date', 'image_preview']
@@ -26,7 +27,7 @@ class UICEventAdmin(admin.ModelAdmin):
             'fields': ('points_value', 'acceptable_answers')
         }),
         ('Media', {
-            'fields': ('image', 'image_preview')
+            'fields': ('image_data', 'image_format', 'image_preview')
         }),
         ('Metadata', {
             'fields': ('event_date',),
@@ -35,11 +36,14 @@ class UICEventAdmin(admin.ModelAdmin):
     )
 
     def image_preview(self, obj):
-        """Show image preview in admin"""
-        if obj.image:
+        """Show image preview in admin from binary data"""
+        if obj.image_data:
+            # Convert binary data to base64 data URL
+            encoded = base64.b64encode(obj.image_data).decode('utf-8')
+            data_url = f"data:image/{obj.image_format};base64,{encoded}"
             return format_html(
                 '<img src="{}" style="max-width: 200px; max-height: 200px;" />',
-                obj.image.url
+                data_url
             )
         return "No image"
     image_preview.short_description = 'Image Preview'

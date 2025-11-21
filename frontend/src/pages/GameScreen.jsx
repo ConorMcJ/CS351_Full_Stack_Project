@@ -172,8 +172,7 @@ export default function GameScreen() {
 
     const hintText = currentEvent?.hint || currentEvent?.description || "Brief sentence(s) describing event.";
 
-    const rawImage = currentEvent?.image;
-    const imageUrl = rawImage ? rawImage.startsWith("http") ? rawImage : `${API_BASE_URL}${rawImage}` : null;
+    const imageUrl = currentEvent?.image_base64 || null;
 
     return (
         <main style={{

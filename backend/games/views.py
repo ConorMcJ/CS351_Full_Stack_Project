@@ -15,7 +15,7 @@ from games.utils.fuzz_finder import FuzzyMatcher
 def get_uic_events(request):
     """Get all UIC events (read-only)"""
     events = UICEvent.objects.all()
-    serializer = UICEventSerializer(events, many=True)
+    serializer = UICEventSerializer(events, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -35,7 +35,7 @@ def start_game(request):
         selected_events = random.sample(list(events), 7)
 
     serializer = GameRoundSerializer(game_round)
-    events_serializer = UICEventSerializer(selected_events, many=True)
+    events_serializer = UICEventSerializer(selected_events, many=True, context={'request': request})
 
     return Response({
         'game_round_id': game_round.id,

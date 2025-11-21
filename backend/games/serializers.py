@@ -1,3 +1,4 @@
+import base64
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UICEvent, GameRound, Guess
@@ -5,12 +6,20 @@ from .models import UICEvent, GameRound, Guess
 
 class UICEventSerializer(serializers.ModelSerializer):
     """Serializer for UICEvent model (read-only, no frontend writes)"""
+    image_base64 = serializers.SerializerMethodField()
 
     class Meta:
         model = UICEvent
-        fields = ['id', 'name', 'description', 'organization', 'image', 
-                  'acceptable_answers', 'points_value', 'event_date']
+        fields = ['id', 'name', 'description', 'organization', 'image_base64', 
+                  'image_format', 'acceptable_answers', 'points_value', 'event_date']
         read_only_fields = fields  # All fields are read-only
+
+    def get_image_base64(self, obj):
+        """Convert binary image data to base64 data URL for JSON response"""
+        if obj.image_data:
+            encoded = base64.b64encode(obj.image_data).decode('utf-8')
+            return f"data:image/{obj.image_format};base64,{encoded}"
+        return None
 
 
 class GuessSerializer(serializers.ModelSerializer):
