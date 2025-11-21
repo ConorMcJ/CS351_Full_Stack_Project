@@ -22,17 +22,20 @@ def get_uic_events(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def start_game(request):
-    """Start a new game round"""
+    """Start a new game round with randomized questions"""
     # Create a new game round for the user
     game_round = GameRound.objects.create(user=request.user)
 
-    # Get random UIC events for this round (e.g., 7 questions)
-    events = UICEvent.objects.all()
-    if events.count() < 7:
-        # If fewer than 7 events exist, use all available
-        selected_events = list(events)
+    # Get random UIC events for this round (7 questions, or all if fewer than 7 exist)
+    all_events = list(UICEvent.objects.all())
+    
+    if len(all_events) <= 7:
+        # If 7 or fewer events exist, use all and shuffle them
+        selected_events = all_events
+        random.shuffle(selected_events)
     else:
-        selected_events = random.sample(list(events), 7)
+        # If more than 7 events exist, randomly sample 7 (sample() automatically randomizes)
+        selected_events = random.sample(all_events, 7)
 
     serializer = GameRoundSerializer(game_round)
     events_serializer = UICEventSerializer(selected_events, many=True, context={'request': request})
