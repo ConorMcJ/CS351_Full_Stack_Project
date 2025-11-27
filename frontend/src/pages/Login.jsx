@@ -93,7 +93,7 @@ export default function Login() {
                 )}
 
                 {/*Login button */}
-                <button
+                <button class='btn rounded-full'
                     type="submit"
                     disabled={disabled}
                     style={{
