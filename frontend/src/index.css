@@ -2,6 +2,14 @@
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark;
 }
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  --color-base-100: #fdffe7;
+  --color-primary:white;
+  --color-info: oklch(70% 0.2 220);
+  --color-primary-content: black;
+}
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -40,4 +48,12 @@ button {
   @apply btn;
   @apply btn-primary;
   @apply rounded-full;
+  
+}
+
+[data-theme="dark"]{
+.card{
+  background-color: black;
+}
+
 }

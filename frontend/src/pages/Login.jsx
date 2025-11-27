@@ -84,7 +84,7 @@ export default function Login() {
             }}
         >
         {/* Theme switcher*/}
-        <label className="swap swap-rotate">
+        <label className="swap swap-rotate absolute top-0 left-0 m-4">
         <input type="checkbox" className="theme-controller" value="synthwave" checked={!isdark} onChange={() => {setIsdark(!isdark);}} />
 
         <svg
@@ -103,7 +103,10 @@ export default function Login() {
         </svg>
         </label>
 
-            <h1 style={{ fontSize: "2rem", marginBottom: 4 }}>StudentLife-Guessr</h1>
+<div className="card bg-primary bg-base-100 w-125 h-100  shadow-xl rounded-small flex min-h justify-center items-center container mx-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+    <div className="card-body">
+            <h1></h1>
+            <h1 className="card-title"style={{ fontSize: "2rem", marginBottom: 4 }}>StudentLife-Guessr</h1>
             <p style={{ marginBottom: 24 }}>
                 Game designed by Arsalan, Conor, Eric, and Sammy
             </p>
@@ -163,6 +166,8 @@ export default function Login() {
                     {loading === "register" ? "Registering..." : "Register"}
                 </button>
             </form>
+            </div>
+            </div>
         </main>
     );
 }
