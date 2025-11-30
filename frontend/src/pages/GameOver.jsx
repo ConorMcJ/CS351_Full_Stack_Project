@@ -41,7 +41,7 @@ export default function GameOver() {
     return (
         <main style={{ maxWidth: 720, margin: "80px auto", textAlign: "center", fontFamily: "system-ui, sans-serif", }}> 
                {/* Theme switcher*/}
-            <label className="swap swap-rotate">
+            <label className="swap swap-rotate absolute top-0 left-0 m-4">
             <input type="checkbox" className="theme-controller" value="synthwave" checked={!isdark} onChange={() => {setIsdark(!isdark);}} />
 
             <svg
