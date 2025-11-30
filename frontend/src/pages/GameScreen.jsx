@@ -94,7 +94,10 @@ export default function GameScreen() {
         if (!roundId || gameEnded || events.length === 0) return;
 
         setSecondsLeft(60);
-        setFeedback("");
+        setTimeout(()=>{
+            setFeedback("");
+        }, 1000);
+        
 
         const timer = setInterval(() => {
             setSecondsLeft((prev) => {
