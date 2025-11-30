@@ -59,19 +59,10 @@ export default function Login() {
 
     async function handleRegister(e) {
         e.preventDefault();
-        setError("");
-        setLoading("register");
-
-        try {
-            await authAPI.register(email, pw);
-            await authAPI.login(email, pw) // auto login after register
-            nav("/menu");
-        } catch (err) {
-            setError(getErrorMessage(err));
-        } finally {
-            setLoading(null);
-        }
+        console.log("handle reg called");
+        nav('/register');
     }
+    
 
     const disabled = !email || !pw || !!loading;
 
@@ -103,7 +94,7 @@ export default function Login() {
         </svg>
         </label>
 
-<div className="card bg-primary bg-base-100 w-125 h-100  shadow-xl rounded-small flex min-h justify-center items-center container mx-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+<div className="card bg-primary bg-base-100 w-125 h-110  shadow-xl rounded-small flex min-h justify-center items-center container mx-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
     <div className="card-body">
             <h1></h1>
             <h1 className="card-title"style={{ fontSize: "2rem", marginBottom: 4 }}>StudentLife-Guessr</h1>
@@ -158,10 +149,7 @@ export default function Login() {
                     type="button"
                     disabled={disabled}
                     onClick={handleRegister}
-                    style={{
-                        padding: "10px 12px",
-                        cursor: disabled ? "default" : "pointer",
-                    }}
+
                 >
                     {loading === "register" ? "Registering..." : "Register"}
                 </button>

@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import MainMenu from "./pages/MainMenu";
 import GameScreen from "./pages/GameScreen";
 import GameOver from "./pages/GameOver";
+import Register from "./pages/Register";
 
 export default  function App() {
     return (
@@ -11,6 +12,7 @@ export default  function App() {
             <Route path="/menu" element={<MainMenu />} />
             <Route path="/play" element={<GameScreen />} />
             <Route path="/over" element={<GameOver />} />
+            <Route path="/register" element={<Register />} />
         {/*default: go to login*/}
         <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
