@@ -204,7 +204,7 @@ export default function GameScreen() {
         >
             {/* Theme switcher*/}
             <label className="swap swap-rotate absolute top-0 left-0 m-4">
-            <input type="checkbox" className="theme-controller" value="synthwave" checked={!isdark} onChange={() => {setIsdark(!isdark);}} />
+            <input  type="checkbox" className="theme-controller" value="synthwave" checked={!isdark} onChange={() => {setIsdark(!isdark);}} />
 
             <svg
                 className="swap-off h-10 w-10 fill-current"
@@ -220,7 +220,11 @@ export default function GameScreen() {
                 <path
                 d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
             </svg>
+
             </label>
+    
+        <div className="card bg-primary bg-base-100 w-60 h-60  shadow-xl rounded-small flex min-h justify-center items-center container ml-10">
+    <div className="card-body">            
             <aside>
                 <div>⏱ Time left: {secondsLeft}s</div>
                 <div style={{ marginTop: 8 }}>
@@ -238,15 +242,11 @@ export default function GameScreen() {
                     Return to Menu
                 </button>
             </aside>
-
+            </div></div>
+        <div className="card bg-primary bg-base-100 w-200 h-200  shadow-xl rounded-small flex min-h justify-center items-center container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+    <div className="card-body">            
             <section>
-                <div style={{ 
-                    width: "100%",
-                    height: 240,
-                    background: "#eee",
-                    display: "grid",
-                    placeItems: "center",
-                    }}
+                <div 
                 >
                     {loading ? (
                         <span>Loading event...</span>
@@ -259,12 +259,14 @@ export default function GameScreen() {
                                 maxHeight: "100%",
                                 objectFit: "cover",
                             }}
+                            className="w-125 h-125"
                         />
                     ) : (
                         <span>[ No image available ]</span>
                     )}
                 </div>
 
+                
                 <div style={{ marginTop: 16 }}>
                     Lives remaining: {lives}
                 </div>
@@ -284,6 +286,7 @@ export default function GameScreen() {
                     style={{ display: "flex", gap: 8, marginTop: 8 }}
                 >
                     <input
+                        className="input"
                         placeholder="Type your guess"
                         value={guess}
                         onChange={(e) => setGuess(e.target.value)}
@@ -315,6 +318,9 @@ export default function GameScreen() {
                 <h3>Hint</h3>
                 <p>{hintText}</p>
             </aside>
+            </div>
+            </div>
+            
         </main>
     );
 }
