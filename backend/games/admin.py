@@ -1,12 +1,51 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django import forms
 import base64
 from .models import UICEvent, GameRound, Guess
+
+
+class UICEventAdminForm(forms.ModelForm):
+    """Custom form for UICEvent that handles file uploads for binary storage"""
+    image_upload = forms.FileField(
+        required=False,
+        help_text="Upload an image file (jpg, png, gif, webp). This will be stored as binary data in the database."
+    )
+    
+    class Meta:
+        model = UICEvent
+        fields = ['name', 'organization', 'description', 'points_value', 'acceptable_answers', 'image_format']
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Handle file upload - convert to binary
+        uploaded_file = self.cleaned_data.get('image_upload')
+        if uploaded_file:
+            # Read file as binary
+            instance.image_data = uploaded_file.read()
+            
+            # Auto-detect format from file extension
+            filename = uploaded_file.name.lower()
+            if filename.endswith('.png'):
+                instance.image_format = 'png'
+            elif filename.endswith('.gif'):
+                instance.image_format = 'gif'
+            elif filename.endswith('.webp'):
+                instance.image_format = 'webp'
+            else:
+                instance.image_format = 'jpg'
+        
+        if commit:
+            instance.save()
+        return instance
 
 
 @admin.register(UICEvent)
 class UICEventAdmin(admin.ModelAdmin):
     """Admin interface for UIC Events"""
+    form = UICEventAdminForm
+    
     list_display = [
         'name', 
         'organization', 
@@ -17,7 +56,7 @@ class UICEventAdmin(admin.ModelAdmin):
     list_filter = ['organization', 'event_date', 'image_format']
     search_fields = ['name', 'description', 'organization']
     ordering = ['name']
-    readonly_fields = ['event_date', 'image_preview']
+    readonly_fields = ['event_date', 'image_preview', 'image_size']
 
     fieldsets = (
         ('Basic Information', {
@@ -27,7 +66,8 @@ class UICEventAdmin(admin.ModelAdmin):
             'fields': ('points_value', 'acceptable_answers')
         }),
         ('Media', {
-            'fields': ('image_data', 'image_format', 'image_preview')
+            'fields': ('image_upload', 'image_format', 'image_preview', 'image_size'),
+            'description': 'Upload a new image or view the existing one. Images are stored as binary data in the database.'
         }),
         ('Metadata', {
             'fields': ('event_date',),
@@ -47,6 +87,14 @@ class UICEventAdmin(admin.ModelAdmin):
             )
         return "No image"
     image_preview.short_description = 'Image Preview'
+    
+    def image_size(self, obj):
+        """Show image size in KB"""
+        if obj.image_data:
+            size_kb = len(obj.image_data) / 1024
+            return f"{size_kb:.1f} KB"
+        return "No image"
+    image_size.short_description = 'Image Size'
 
 
 class GuessInline(admin.TabularInline):
